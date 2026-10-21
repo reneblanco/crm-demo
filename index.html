@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Demo de un CRM hecho a la medida para una empresa de pisos y recubrimientos: bandeja de leads, clientes con datos fiscales, cotizaciones, contratos y solicitudes de pago.">
+<meta name="robots" content="noindex">
+<title>CRM Acabados del Golfo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;font-size:15px}[hidden]{display:none!important}img{max-width:100%}
+
+/* Layout: herramienta de trabajo — barra de marca, tabs por sección, lista densa; documentos como hoja de papel en un panel */
+:root{
+  --bg:#E9EBEA; --surface:#F7F8F7; --sunk:#DFE2E1; --ink:#1B2023; --muted:#5A6368; --line:#CFD4D3;
+  --accent:#1F4E8C; --accent-ink:#FFFFFF; --accent-soft:#DCE6F3;
+  --ok:#2B7A4B; --ok-soft:#DCEEE3; --warn:#9A6414; --warn-soft:#F5E8D2; --bad:#A93838; --bad-soft:#F4DEDE;
+  --paper:#FFFFFF; --paper-ink:#1B2023; --paper-line:#D9DDDC; --shade:rgba(20,26,30,.45);
+  color-scheme:light;
+  --f-ui:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.demo{background:var(--ink);color:var(--bg);font-size:13px}
+.demo .wrap{padding-block:8px;display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.demo b{font-weight:600}
+
+header.top .wrap{padding-block:20px 4px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-stretch:118%;font-weight:800;font-size:22px;letter-spacing:-.01em;line-height:1}
+.brand small{display:block;font-stretch:100%;font-weight:500;font-size:13px;color:var(--muted);letter-spacing:0;margin-top:6px}
+
+nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-top:14px;overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;gap:6px;align-items:center}
+nav.tabs button[aria-current="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.badge{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:11px;padding:1px 7px;font-family:var(--f-mono)}
+
+main{padding-block:18px 40px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.bar h2{margin:0;font-size:17px;font-stretch:110%}
+.bar p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:62ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 11px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 11px;width:min(100%,340px)}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 12px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.wa{background:#1F8F4E;color:#fff;border-color:#1F8F4E;text-decoration:none;display:inline-block}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent);padding-inline:8px}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* inicio */
+.hello h2{margin:0;font-size:24px;font-stretch:112%;font-weight:800;text-wrap:balance}
+.hello p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-block:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.stat span{font-size:13px;color:var(--muted)}
+.stat strong{font-family:var(--f-mono);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+@media (max-width:720px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.home{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:820px){.home{grid-template-columns:1fr}}
+.panel-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:600}
+.mini{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left}
+.mini:first-of-type{border-top:0}
+.mini:hover{background:var(--sunk)}
+.ini{width:36px;height:36px;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:600;color:var(--muted);font-family:var(--f-mono)}
+.mini .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini .s{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.list{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.row{display:grid;grid-template-columns:var(--cols);gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--sunk);padding-block:8px}
+.row > *{min-width:0}
+.row .t{font-weight:600}
+.row .s{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.row .acts{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.r{text-align:right}
+.empty{padding:28px 14px;color:var(--muted);text-align:center}
+.est{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:13px;max-width:100%}
+@media (max-width:720px){
+  .row{grid-template-columns:1fr !important;gap:4px}
+  .row.head{display:none}
+  .row .acts{justify-content:flex-start;margin-top:6px}
+  .r{text-align:left}
+  .est{justify-self:start}
+}
+
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.p-neutral{background:var(--sunk);color:var(--muted)}
+.p-info{background:var(--accent-soft);color:var(--accent)}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+
+.lead{display:grid;grid-template-columns:1fr auto;gap:6px 16px;padding:14px;border-top:1px solid var(--line)}
+.lead:first-child{border-top:0}
+.lead .msg{grid-column:1/-1;background:var(--sunk);border-radius:7px;padding:9px 11px;font-size:14px;max-width:70ch}
+.lead .meta{grid-column:1/-1;display:flex;gap:6px 16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.lead .acts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.lead.dim{opacity:.6}
+
+/* panel */
+.overlay{position:fixed;inset:0;background:var(--shade);display:flex;justify-content:center;align-items:flex-start;padding:max(16px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));z-index:20;overflow-y:auto}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:100%;max-width:760px;margin-block:auto;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sheet-h h3{margin:0;font-size:16px;font-stretch:110%}
+.sheet-b{padding:16px;display:grid;gap:16px}
+.sheet-f{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.x{background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:4px 8px}
+
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+.full{grid-column:1/-1}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:500;align-content:start}
+label.f small{font-weight:400;font-size:12px}
+label.f input,label.f select,label.f textarea,.items input,.items select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;color:var(--ink);min-width:0}
+.check{display:flex;gap:8px;align-items:center;font-size:14px}
+.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin:0}
+.err{color:var(--bad);font-size:13px;margin:0}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;display:grid;gap:2px}
+.card b{font-size:14px}
+.opts{display:grid;gap:8px}
+.opt{display:grid;gap:2px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt b{font-size:15px}
+.opt span{font-size:13px;color:var(--muted)}
+.opt:disabled{opacity:.5;cursor:not-allowed}
+
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg .list{padding:14px;display:grid;gap:12px;align-content:start}
+
+.items{display:grid;gap:8px}
+.irow{display:grid;grid-template-columns:minmax(0,1fr) 88px 80px 104px 104px 32px;gap:6px;align-items:center}
+.irow.h{font-size:12px;color:var(--muted)}
+.irow .lt{text-align:right;font-family:var(--f-mono);font-size:13px}
+@media (max-width:640px){
+  .irow{grid-template-columns:1fr 1fr 1fr;border:1px solid var(--line);border-radius:8px;padding:8px}
+  .irow.h{display:none}
+  .irow > :first-child{grid-column:1/-1}
+  .irow .lt{text-align:left}
+}
+.totals{display:grid;gap:4px;justify-self:end;min-width:240px;font-size:14px}
+.totals div{display:flex;justify-content:space-between;gap:24px}
+.totals .big{font-weight:700;font-size:16px;border-top:1px solid var(--line);padding-top:6px}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:5px 10px;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tbl{width:100%;min-width:480px;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;border-bottom:1px solid var(--line);padding:6px 4px;font-weight:600}
+.tbl td{border-bottom:1px solid var(--line);padding:8px 4px;vertical-align:top}
+.tbl .r{text-align:right}
+
+/* hoja tipo PDF */
+.note{font-size:12.5px;color:var(--muted);background:var(--sunk);border-radius:7px;padding:8px 10px;margin:0}
+.paper-scroll{overflow-x:auto}
+.paper{background:var(--paper);color:var(--paper-ink);border:1px solid var(--paper-line);border-radius:4px;padding:32px 34px;min-width:520px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.paper{position:relative;overflow:hidden}
+.paper::before{content:"DEMO · DATOS FICTICIOS";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-24deg);font:800 54px/1 var(--f-ui);font-stretch:118%;letter-spacing:.04em;color:rgba(27,32,35,.07);white-space:nowrap;pointer-events:none}
+.paper .demo-tag{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--paper-ink);border-radius:3px;padding:1px 6px;display:inline-block;margin-top:6px}
+.tag{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:2px 7px;vertical-align:middle;margin-left:8px;font-stretch:100%}
+.paper h4{margin:0;font-stretch:118%;font-weight:800;font-size:18px}
+.paper .ph{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid var(--paper-ink);padding-bottom:12px;margin-bottom:16px}
+.paper .doc-t{text-align:right}
+.paper .doc-t .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.paper .doc-t .v{font-family:var(--f-mono);font-size:16px;font-weight:500}
+.paper .meta2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.paper .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.65;margin-bottom:2px}
+.paper table{width:100%;border-collapse:collapse;margin-bottom:12px}
+.paper th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;text-align:left;border-bottom:1px solid var(--paper-ink);padding:6px 4px}
+.paper td{border-bottom:1px solid var(--paper-line);padding:7px 4px;vertical-align:top}
+.paper .r{text-align:right}
+.paper .tot{display:grid;gap:3px;margin-left:auto;width:240px}
+.paper .tot div{display:flex;justify-content:space-between}
+.paper .tot .big{font-weight:700;border-top:1px solid var(--paper-ink);padding-top:4px;font-size:14px}
+.paper .foot{margin-top:18px;font-size:11.5px;opacity:.75;border-top:1px solid var(--paper-line);padding-top:10px}
+.paper p{margin:0 0 10px;max-width:68ch}
+.paper h5{margin:14px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.paper .bank{border:1px solid var(--paper-ink);border-radius:4px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:12px 0}
+.paper .sign{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px;text-align:center;font-size:12px}
+.paper .sign div{border-top:1px solid var(--paper-ink);padding-top:6px}
+
+.cta{border-top:1px solid var(--line);background:var(--surface)}
+.cta .wrap{padding-block:28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.cta h2{margin:0;font-size:22px;font-stretch:112%;font-weight:800;text-wrap:balance}
+.cta p{margin:6px 0 0;color:var(--muted);max-width:58ch}
+.cta .cta-alt{font-size:13.5px;color:var(--ink)}
+.btn.big{padding:11px 20px;font-size:15px;text-decoration:none}
+footer .wrap{padding-block:18px 32px !important}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+footer .wrap{padding-block:0 32px;font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(8px);opacity:.6}}}
+</style>
+</head>
+<body>
+
+<div class="demo"><div class="wrap"><span><b>Esto es un demo.</b> Empresa, clientes, RFC y datos bancarios son ficticios. Lo que hagas se borra al recargar.</span><a href="#cta" style="color:inherit;font-weight:600">¿Quieres uno? →</a></div></div>
+
+<header class="top"><div class="wrap">
+  <div class="brand" id="brand"></div>
+</div></header>
+
+<div class="wrap"><nav class="tabs" id="tabs" aria-label="Secciones"></nav></div>
+<main class="wrap" id="view"></main>
+<section class="cta" id="cta"><div class="wrap">
+  <div><h2>¿Quieres uno así para tu negocio?</h2><p>Lo armo alrededor de cómo trabajas tú: tus documentos, tus campos, tu forma de cobrar. Sin mensualidades por funciones que no usas.</p>
+  <p class="cta-alt">¿Eres agencia o freelancer? También lo hago en marca blanca para tus clientes.</p></div>
+  <a class="btn primary big" href="https://reneblanco.com" target="_blank" rel="noopener">Platiquemos</a>
+</div></section>
+<footer><div class="wrap">Sin pipeline de 9 etapas, sin lifecycle stage, sin lead scoring. Solo lo que este negocio usa hoy. · Hecho por René Blanco · reneblanco.com</div></footer>
+<div id="modal"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const MXN=new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'});
+const m=n=>MXN.format(Math.round((n||0)*100)/100);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const d8=iso=>new Date(iso+'T12:00:00');
+const fd=iso=>d8(iso).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+const fdl=iso=>d8(iso).toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
+const addDays=(iso,n)=>{const d=d8(iso);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const today=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+let uidN=100;const uid=()=>'x'+(uidN++);
+
+const REG=['601 General de Ley Personas Morales','612 Personas Físicas con Actividades Empresariales y Profesionales','626 Régimen Simplificado de Confianza','605 Sueldos y Salarios','616 Sin obligaciones fiscales'];
+const USO=['G03 Gastos en general','I01 Construcciones','S01 Sin efectos fiscales'];
+const UNI=['m²','ml','pza','lote','servicio','viaje'];
+
+const S={
+  cfg:{nombre:'Acabados del Golfo',razon:'Pisos y Recubrimientos del Golfo S. de R.L. de C.V.',rfc:'AAA000000AA0',tel:'000 000 0000',email:'demo@ejemplo.com',ciudad:'Veracruz, Ver.',direccion:'Calle Ejemplo 000, Col. Demo, Veracruz, Ver.',iva:16,vig:15,
+    condiciones:'Precios en pesos mexicanos. Cotización sujeta a vigencia. El material corre por cuenta del cliente salvo que se indique "suministro".',
+    pCot:'COT',pCon:'CON',pCob:'COB',banco:'Banco Demo',beneficiario:'Pisos y Recubrimientos del Golfo S. de R.L. de C.V.',cuenta:'0000000000',clabe:'000000000000000000',instrucciones:'Incluir el folio del documento como referencia y mandar el comprobante por WhatsApp.'},
+  leads:[
+    {id:'l1',nombre:'Mariana Ortega',empresa:'',tel:'000 000 0000',email:'mariana@ejemplo.com',mensaje:'Quiero cotizar piso laminado para una recámara de 14 m². ¿Ustedes ponen el bajo alfombra?',fecha:'2026-10-19',estado:'nuevo'},
+    {id:'l2',nombre:'Ing. Luis Peña',empresa:'Constructora Peña Alta',tel:'000 000 0000',email:'luis@ejemplo.com',mensaje:'Tenemos 6 departamentos en obra gris en Boca del Río. Necesitamos porcelanato en áreas comunes, unos 320 m². ¿Pueden facturar?',fecha:'2026-10-18',estado:'nuevo'},
+    {id:'l3',nombre:'Rodrigo Salinas',empresa:'',tel:'000 000 0000',email:'',mensaje:'¿Cuánto cuesta pulir piso de mármol? Son como 40 m² en planta baja.',fecha:'2026-10-16',estado:'nuevo'},
+    {id:'l4',nombre:'Patricia Lozano',empresa:'',tel:'000 000 0000',email:'patricia@ejemplo.com',mensaje:'Remodelación de planta baja, queremos cambiar todo el piso.',fecha:'2026-10-06',estado:'convertido'}
+  ],
+  clientes:[
+    {id:'c3',nombre:'Jorge Arreola',razon:'',rfc:'',regimen:'',cp:'',uso:'',factura:false,tel:'000 000 0000',email:'',obra:'Local en Av. Ejemplo 000',origen:'Agregado manualmente',alta:'2026-09-25'},
+    {id:'c1',nombre:'Patricia Lozano Ramírez',razon:'Patricia Lozano Ramírez',rfc:'AAAA000000AA0',regimen:REG[1],cp:'00000',uso:USO[0],factura:true,tel:'000 000 0000',email:'patricia@ejemplo.com',obra:'Casa en Fracc. Ejemplo, Boca del Río',origen:'Formulario web',alta:'2026-10-06'},
+    {id:'c2',nombre:'Arq. Daniel Cervantes',razon:'Inmobiliaria Ejemplo del Golfo S.A. de C.V.',rfc:'ABC000000AB0',regimen:REG[0],cp:'00000',uso:USO[1],factura:true,tel:'000 000 0000',email:'daniel@ejemplo.com',obra:'Torre Ejemplo, piso 3 (oficinas)',origen:'Agregado manualmente',alta:'2026-10-13'}
+  ],
+  cots:[
+    {id:'q39',num:39,cli:'c3',fecha:'2026-09-28',iva:false,est:'rechazada',items:[{d:'Instalación de loseta cerámica 45x45',u:'m²',c:30,p:160}],notas:''},
+    {id:'q41',num:41,cli:'c1',fecha:'2026-10-07',iva:true,est:'aceptada',items:[{d:'Instalación de porcelanato 60x60 (material del cliente)',u:'m²',c:42,p:180},{d:'Nivelación de firme con mortero autonivelante',u:'m²',c:42,p:65},{d:'Colocación de zoclo',u:'ml',c:38,p:45}],notas:'Incluye retiro de escombro de la obra.'},
+    {id:'q42',num:42,cli:'c2',fecha:'2026-10-15',iva:true,est:'enviada',items:[{d:'Suministro e instalación de piso vinílico SPC 5 mm',u:'m²',c:210,p:395},{d:'Retiro de alfombra existente',u:'m²',c:210,p:28}],notas:'Trabajo en horario nocturno para no afectar la operación.'},
+    {id:'q43',num:43,cli:'c3',fecha:'2026-10-19',iva:false,est:'borrador',items:[{d:'Pulido y abrillantado de piso existente',u:'m²',c:55,p:95}],notas:''}
+  ],
+  cons:[{id:'k12',num:12,cot:'q41',fecha:'2026-10-08',inicio:'2026-10-13',plazo:8,garantia:12,est:'firmado'}],
+  sols:[
+    {id:'s18',num:18,cot:'q41',concepto:'Anticipo 50%',monto:6960,fecha:'2026-10-09',est:'pagado',fpago:'2026-10-10'},
+    {id:'s19',num:19,cot:'q41',concepto:'Pago final (saldo)',monto:6960,fecha:'2026-10-18',est:'pendiente',fpago:''}
+  ],
+  seq:{cot:44,con:13,cob:20},view:'inicio',tipo:'todos',q:''
+};
+
+const cli=id=>S.clientes.find(c=>c.id===id);
+const cot=id=>S.cots.find(c=>c.id===id);
+const pad=n=>String(n).padStart(4,'0');
+const fCot=q=>`${S.cfg.pCot}-${pad(q.num)}`, fCon=k=>`${S.cfg.pCon}-${pad(k.num)}`, fCob=s=>`${S.cfg.pCob}-${pad(s.num)}`;
+const calc=c=>{const sub=c.items.reduce((a,i)=>a+(+i.c||0)*(+i.p||0),0);const iva=c.iva?Math.round(sub*S.cfg.iva)/100:0;return{sub,iva,total:sub+iva}};
+const solicitado=cid=>S.sols.filter(s=>s.cot===cid).reduce((a,s)=>a+s.monto,0);
+const cobrado=cid=>S.sols.filter(s=>s.cot===cid&&s.est==='pagado').reduce((a,s)=>a+s.monto,0);
+const PILL={nuevo:'info',contactado:'warn',convertido:'ok',descartado:'neutral',borrador:'neutral',enviada:'info',enviado:'info',aceptada:'ok',firmado:'ok',rechazada:'bad',pendiente:'warn',pagado:'ok'};
+const pill=e=>`<span class="pill p-${PILL[e]||'neutral'}">${esc(cap(e))}</span>`;
+const EST={cot:['borrador','enviada','aceptada','rechazada'],con:['borrador','enviado','firmado'],cob:['pendiente','pagado']};
+const TIPO={cot:'Cotización',con:'Contrato',cob:'Solicitud de pago'};
+const waNum=t=>'52'+String(t||'').replace(/\D/g,'').slice(-10);
+const waLink=(tel,msg)=>`https://wa.me/${waNum(tel)}?text=${encodeURIComponent(msg)}`;
+const waLead=l=>waLink(l.tel,`Hola ${l.nombre.replace(/^(Ing|Arq|Lic|Dr|Dra)\.\s*/,'').split(' ')[0]}, te escribimos de ${S.cfg.nombre}. Recibimos tu mensaje en nuestro sitio web: "${l.mensaje}" ¿Cuándo podemos visitarte para tomar medidas y mandarte la cotización?`);
+const inits=n=>n.replace(/^(Ing|Arq|Lic|Dr|Dra)\.\s*/,'').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+function docs(){
+  return [
+    ...S.cots.map(q=>({tipo:'cot',id:q.id,folio:fCot(q),cli:cli(q.cli),total:calc(q).total,est:q.est,fecha:q.fecha})),
+    ...S.cons.map(k=>{const q=cot(k.cot);return{tipo:'con',id:k.id,folio:fCon(k),cli:cli(q.cli),total:calc(q).total,est:k.est,fecha:k.fecha}}),
+    ...S.sols.map(s=>{const q=cot(s.cot);return{tipo:'cob',id:s.id,folio:fCob(s),cli:cli(q.cli),total:s.monto,est:s.est,fecha:s.fecha,sub:s.concepto}})
+  ].sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.folio.localeCompare(a.folio));
+}
+
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+
+/* ---------- vistas ---------- */
+function render(){
+  document.getElementById('brand').innerHTML=`${esc(S.cfg.nombre)}<span class="tag">Demo</span><small>Pisos y recubrimientos · ${esc(S.cfg.ciudad)}</small>`;
+  const nuevos=S.leads.filter(l=>l.estado==='nuevo').length;
+  const tabs=[['inicio','Inicio'],['bandeja','Bandeja',nuevos],['clientes','Clientes'],['documentos','Documentos'],['config','Configuración']];
+  document.getElementById('tabs').innerHTML=tabs.map(([k,t,b])=>`<button data-act="nav" data-view="${k}" aria-current="${S.view===k}">${t}${b?`<span class="badge">${b}</span>`:''}</button>`).join('');
+  document.getElementById('view').innerHTML=({inicio:vInicio,bandeja:vBandeja,clientes:vClientes,documentos:vDocs,config:vConfig})[S.view]();
+  if(S.view==='clientes')drawCliList();
+}
+
+function vInicio(){
+  const h=new Date().getHours();const saludo=h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+  const abiertas=S.cots.filter(c=>c.est==='enviada').length;
+  const pend=S.sols.filter(s=>s.est==='pendiente').reduce((a,s)=>a+s.monto,0);
+  const web=S.leads.filter(l=>l.estado==='nuevo').length;
+  const rc=[...S.clientes].sort((a,b)=>b.alta.localeCompare(a.alta)).slice(0,5);
+  const rd=docs().slice(0,5);
+  return `<div class="bar hello"><div><h2>${saludo}</h2><p>Clientes y documentos, sin complicaciones. No necesitas administrar etapas ni seguimientos: guarda al cliente y crea el documento que necesites.</p></div><button class="btn primary" data-act="cli-new">Nuevo cliente</button></div>
+  <div class="stats">
+    <div class="stat"><span>Clientes</span><strong>${S.clientes.length}</strong></div>
+    <div class="stat"><span>Nuevos desde el sitio web</span><strong>${web}</strong></div>
+    <div class="stat"><span>Cotizaciones esperando respuesta</span><strong>${abiertas}</strong></div>
+    <div class="stat"><span>Por cobrar</span><strong>${m(pend)}</strong></div>
+  </div>
+  <div class="home">
+    <div class="list"><div class="panel-h"><span>Clientes recientes</span><button class="btn ghost sm" data-act="nav" data-view="clientes">Ver todos</button></div>
+      ${rc.map(c=>`<button class="mini" data-act="cli-edit" data-id="${c.id}"><span class="ini">${esc(inits(c.nombre))}</span><span style="min-width:0"><div class="t">${esc(c.nombre)}</div><div class="s">${esc(c.razon&&c.razon!==c.nombre?c.razon:(c.factura?'Persona física':'Cliente particular'))}</div></span><span class="s">${fd(c.alta)}</span></button>`).join('')}
+    </div>
+    <div class="list"><div class="panel-h"><span>Documentos recientes</span><button class="btn ghost sm" data-act="nav" data-view="documentos">Ver todos</button></div>
+      ${rd.map(d=>`<button class="mini" data-act="doc-open" data-tipo="${d.tipo}" data-id="${d.id}"><span class="ini">${d.tipo.toUpperCase()}</span><span style="min-width:0"><div class="t mono">${d.folio}</div><div class="s">${esc(d.cli.nombre)} · ${m(d.total)}</div></span>${pill(d.est)}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function vBandeja(){
+  const rank={nuevo:0,contactado:1,convertido:2};const ls=[...S.leads].filter(l=>l.estado!=='descartado').sort((a,b)=>rank[a.estado]-rank[b.estado]||b.fecha.localeCompare(a.fecha));
+  return `<div class="bar"><div><h2>Bandeja</h2><p>Lo que llega del formulario de contacto del sitio web. Contesta por WhatsApp con un mensaje ya escrito, o conviértelo en cliente para cotizarle.</p></div></div>
+  <div class="list">${ls.map(l=>`<div class="lead ${l.estado==='convertido'?'dim':''}">
+    <div><span style="font-weight:600">${esc(l.nombre)}</span>${l.empresa?` <span style="color:var(--muted)">· ${esc(l.empresa)}</span>`:''}</div>
+    <div>${pill(l.estado)}</div>
+    <div class="msg">${esc(l.mensaje)}</div>
+    <div class="meta"><span class="mono">${esc(l.tel)}</span>${l.email?`<span>${esc(l.email)}</span>`:''}<span>Formulario web · ${fd(l.fecha)}</span></div>
+    ${l.estado==='nuevo'||l.estado==='contactado'?`<div class="acts"><a class="btn wa sm" href="${esc(waLead(l))}" target="_blank" rel="noopener" data-act="lead-wa" data-id="${l.id}">Contestar por WhatsApp</a><button class="btn primary sm" data-act="lead-convert" data-id="${l.id}">Convertir en cliente</button><button class="btn sm" data-act="lead-discard" data-id="${l.id}">Descartar</button></div>`:''}
+  </div>`).join('')||'<div class="empty">No hay mensajes nuevos.</div>'}</div>`;
+}
+
+function vClientes(){
+  return `<div class="bar"><div><h2>Clientes</h2><p>Con los datos fiscales que se usan en México para facturar y conciliar pagos.</p></div><button class="btn primary" data-act="cli-new">Nuevo cliente</button></div>
+  <div class="tools"><input class="search" id="f-q" type="search" placeholder="Buscar por nombre, empresa o RFC" value="${esc(S.q)}" aria-label="Buscar clientes"></div>
+  <div class="list" id="cli-list" style="--cols:minmax(0,1.4fr) minmax(0,1.1fr) minmax(0,1fr) 110px 160px"></div>`;
+}
+function drawCliList(){
+  const q=S.q.toLowerCase();const cs=[...S.clientes].sort((a,b)=>b.alta.localeCompare(a.alta)).filter(c=>!q||[c.nombre,c.razon,c.rfc,c.email].join(' ').toLowerCase().includes(q));
+  document.getElementById('cli-list').innerHTML=`<div class="row head"><span>Cliente</span><span>Teléfono y correo</span><span>Origen</span><span>Registrado</span><span></span></div>`+
+  (cs.map(c=>`<div class="row">
+    <div><div class="t">${esc(c.nombre)}</div><div class="s">${c.rfc?`<span class="mono">${esc(c.rfc)}</span> · `:''}${c.factura?'Requiere factura':'Sin factura'}</div></div>
+    <div><div class="mono s" style="color:var(--ink)">${esc(c.tel)}</div><div class="s">${esc(c.email)||'Sin correo'}</div></div>
+    <div class="s">${esc(c.origen)}</div>
+    <div class="s">${fd(c.alta)}</div>
+    <div class="acts"><button class="btn ghost sm" data-act="cli-edit" data-id="${c.id}">Abrir</button><button class="btn sm" data-act="cot-new" data-cli="${c.id}">Cotizar</button></div>
+  </div>`).join('')||'<div class="empty">Ningún cliente coincide con la búsqueda.</div>');
+}
+
+function vDocs(){
+  const t=S.tipo;const ds=docs().filter(d=>t==='todos'||d.tipo===t);
+  const ch=[['todos','Todos'],['cot','Cotizaciones'],['con','Contratos'],['cob','Solicitudes de pago']];
+  return `<div class="bar"><div><h2>Documentos</h2><p>Cotizaciones, contratos y solicitudes de pago. Cada uno sale como PDF para mandarlo por WhatsApp o correo.</p></div><button class="btn primary" data-act="doc-new">Nuevo documento</button></div>
+  <div class="tools chips">${ch.map(([k,l])=>`<button class="chip" data-act="tipo" data-t="${k}" aria-pressed="${t===k}">${l}</button>`).join('')}</div>
+  <div class="list" style="--cols:96px minmax(0,1.3fr) minmax(0,1fr) 132px 128px 96px 120px"><div class="row head"><span>Folio</span><span>Cliente</span><span>Tipo</span><span class="r">Total</span><span>Estado</span><span>Fecha</span><span></span></div>
+  ${ds.map(d=>`<div class="row">
+    <div class="mono">${d.folio}</div>
+    <div class="t">${esc(d.cli.nombre)}</div>
+    <div class="s">${TIPO[d.tipo]}${d.sub?`<br>${esc(d.sub)}`:''}</div>
+    <div class="num r">${m(d.total)}</div>
+    <div><select class="est" data-est-tipo="${d.tipo}" data-id="${d.id}" aria-label="Estado de ${d.folio}">${EST[d.tipo].map(e=>`<option value="${e}" ${e===d.est?'selected':''}>${cap(e)}</option>`).join('')}</select></div>
+    <div class="s">${fd(d.fecha)}</div>
+    <div class="acts">${d.tipo==='cot'?`<button class="btn ghost sm" data-act="cot-view" data-id="${d.id}">Abrir</button>`:''}<button class="btn sm" data-act="doc-open" data-tipo="${d.tipo}" data-id="${d.id}">PDF</button></div>
+  </div>`).join('')||'<div class="empty">No hay documentos de este tipo.</div>'}</div>`;
+}
+
+function vConfig(){
+  const c=S.cfg;const fi=(id,l,h='',attrs='')=>`<label class="f">${l}<input id="g-${id}" value="${esc(c[id])}" ${attrs}>${h?`<small>${h}</small>`:''}</label>`;
+  return `<div class="bar"><div><h2>Configuración</h2><p>Estos datos se reutilizan en todos los documentos. Cámbialos y abre cualquier PDF: ya salen con lo nuevo.</p></div><button class="btn primary" data-act="cfg-save">Guardar cambios</button></div>
+  <div class="cfg">
+    <div class="list"><p class="sec">Datos de la empresa</p>
+      <div class="grid2">${fi('nombre','Nombre comercial','El que ve el cliente en los documentos.')}${fi('razon','Razón social')}
+      ${fi('rfc','RFC','','class="mono" maxlength="13" style="text-transform:uppercase"')}${fi('tel','Teléfono','','inputmode="tel"')}
+      ${fi('email','Correo','','type="email"')}${fi('ciudad','Ciudad','Aparece en contratos y solicitudes de pago.')}
+      ${fi('iva','IVA predeterminado (%)','16% en general; 8% en región fronteriza.','inputmode="decimal" class="mono"')}${fi('vig','Vigencia de cotizaciones (días)','','inputmode="numeric" class="mono"')}</div>
+      <label class="f">Dirección<input id="g-direccion" value="${esc(c.direccion)}"></label>
+      <label class="f">Condiciones predeterminadas<textarea id="g-condiciones" rows="3">${esc(c.condiciones)}</textarea><small>Se imprimen al pie de cada cotización.</small></label>
+    </div>
+    <div class="list"><p class="sec">Folios</p>
+      <div class="grid2">${fi('pCot','Prefijo de cotización',`Ej. ${esc(c.pCot)}-0041`,'class="mono" maxlength="6"')}${fi('pCon','Prefijo de contrato','','class="mono" maxlength="6"')}${fi('pCob','Prefijo de solicitud de pago','','class="mono" maxlength="6"')}</div>
+      <p class="sec">Datos bancarios</p>
+      <div class="grid2">${fi('banco','Banco')}${fi('beneficiario','Beneficiario','Titular exacto de la cuenta.')}
+      ${fi('cuenta','Cuenta','','class="mono" inputmode="numeric"')}${fi('clabe','CLABE','18 dígitos, sin espacios.','class="mono" inputmode="numeric" maxlength="18"')}</div>
+      <label class="f">Instrucciones de pago<textarea id="g-instrucciones" rows="2">${esc(c.instrucciones)}</textarea></label>
+      <p class="err" id="g-err" hidden></p>
+    </div>
+  </div>`;
+}
+function saveCfg(){
+  const g=k=>document.getElementById('g-'+k).value.trim();const e=document.getElementById('g-err');const err=t=>{e.textContent=t;e.hidden=false;e.scrollIntoView({block:'nearest'})};
+  const iva=parseFloat(g('iva')),vig=parseInt(g('vig'));
+  if(!g('nombre'))return err('Falta el nombre comercial.');
+  if(isNaN(iva)||iva<0||iva>100)return err('El IVA tiene que ser un número entre 0 y 100.');
+  if(isNaN(vig)||vig<1)return err('La vigencia tiene que ser de al menos 1 día.');
+  for(const k of ['pCot','pCon','pCob'])if(!/^[A-Za-z]{1,6}$/.test(g(k)))return err('Los prefijos de folio solo llevan letras (hasta 6).');
+  if(new Set([g('pCot'),g('pCon'),g('pCob')].map(x=>x.toUpperCase())).size<3)return err('Cada tipo de documento necesita un prefijo distinto.');
+  if(g('clabe')&&!/^\d{18}$/.test(g('clabe')))return err('La CLABE debe tener exactamente 18 dígitos.');
+  Object.assign(S.cfg,{nombre:g('nombre'),razon:g('razon'),rfc:g('rfc').toUpperCase(),tel:g('tel'),email:g('email'),ciudad:g('ciudad'),direccion:g('direccion'),iva,vig,condiciones:g('condiciones'),
+    pCot:g('pCot').toUpperCase(),pCon:g('pCon').toUpperCase(),pCob:g('pCob').toUpperCase(),banco:g('banco'),beneficiario:g('beneficiario'),cuenta:g('cuenta'),clabe:g('clabe'),instrucciones:g('instrucciones')});
+  render();toast('Configuración guardada. Los documentos ya usan los datos nuevos.');
+}
+
+/* ---------- panel ---------- */
+function open(title,body,foot=''){
+  document.getElementById('modal').innerHTML=`<div class="overlay" data-act="bg"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title.replace(/<[^>]+>/g,''))}">
+  <div class="sheet-h"><h3>${title}</h3><button class="x" data-act="close" aria-label="Cerrar">×</button></div>
+  <div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
+  const f=document.querySelector('.sheet input,.sheet select');if(f)f.focus({preventScroll:true});
+}
+const close=()=>document.getElementById('modal').innerHTML='';
+const val=id=>document.getElementById(id)?.value.trim()??'';
+
+function cliForm(c={},leadId=''){
+  const opt=(arr,v)=>`<option value="">—</option>`+arr.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('');
+  const nd=c.id?docs().filter(d=>d.cli.id===c.id):[];
+  open(c.id?esc(c.nombre):'Nuevo cliente',`
+  <p class="sec">Contacto</p>
+  <div class="grid2">
+    <label class="f">Nombre *<input id="f-nombre" value="${esc(c.nombre)}"></label>
+    <label class="f">WhatsApp<input id="f-tel" value="${esc(c.tel)}" inputmode="tel"></label>
+    <label class="f">Correo<input id="f-email" value="${esc(c.email)}" type="email"></label>
+    <label class="f">Obra o dirección del trabajo<input id="f-obra" value="${esc(c.obra)}"></label>
+  </div>
+  <p class="sec">Datos fiscales</p>
+  <label class="check"><input type="checkbox" id="f-fact" ${c.factura!==false?'checked':''}> Requiere factura</label>
+  <div class="grid2">
+    <label class="f">Razón social<input id="f-razon" value="${esc(c.razon)}"></label>
+    <label class="f">RFC<input id="f-rfc" value="${esc(c.rfc)}" maxlength="13" style="text-transform:uppercase" class="mono"></label>
+    <label class="f">Régimen fiscal<select id="f-reg">${opt(REG,c.regimen)}</select></label>
+    <label class="f">Uso de CFDI<select id="f-uso">${opt(USO,c.uso)}</select></label>
+    <label class="f">Código postal fiscal<input id="f-cp" value="${esc(c.cp)}" maxlength="5" inputmode="numeric" class="mono"></label>
+  </div>
+  ${nd.length?`<p class="sec">Documentos</p><div class="card">${nd.map(d=>`<span><span class="mono">${d.folio}</span> · ${TIPO[d.tipo]} · <span class="num">${m(d.total)}</span> · ${d.est}</span>`).join('')}</div>`:''}
+  <p class="err" id="f-err" hidden></p>`,
+  `${c.id&&c.tel?`<a class="btn wa" href="${esc(waLink(c.tel,`Hola ${c.nombre.split(' ')[0]}, te escribimos de ${S.cfg.nombre}.`))}" target="_blank" rel="noopener">WhatsApp</a>`:''}${c.id?`<button class="btn" data-act="cot-new" data-cli="${c.id}">Cotizar</button>`:''}<button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="cli-save" data-id="${c.id||''}" data-lead="${leadId}">${c.id?'Guardar cambios':'Crear cliente'}</button>`);
+}
+function saveCli(id,leadId){
+  const e=document.getElementById('f-err');const rfc=val('f-rfc').toUpperCase();const fact=document.getElementById('f-fact').checked;
+  const err=t=>{e.textContent=t;e.hidden=false};
+  if(!val('f-nombre'))return err('Escribe el nombre del cliente.');
+  if(fact&&!/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(rfc))return err('Para facturar se necesita un RFC válido (12 caracteres para empresa, 13 para persona física).');
+  if(fact&&!/^\d{5}$/.test(val('f-cp')))return err('Para facturar se necesita el código postal fiscal de 5 dígitos.');
+  const data={nombre:val('f-nombre'),tel:val('f-tel'),email:val('f-email'),obra:val('f-obra'),razon:val('f-razon')||val('f-nombre'),rfc,regimen:val('f-reg'),uso:val('f-uso'),cp:val('f-cp'),factura:fact};
+  if(id)Object.assign(cli(id),data);else S.clientes.push({id:uid(),...data,origen:leadId?'Formulario web':'Agregado manualmente',alta:today()});
+  if(leadId){S.leads.find(l=>l.id===leadId).estado='convertido';S.view='clientes'}
+  close();render();toast(id?'Cliente actualizado':'Cliente creado. Ya le puedes cotizar.');
+}
+
+function docNew(){
+  const acc=S.cots.filter(q=>q.est==='aceptada');
+  const conOk=acc.some(q=>!S.cons.find(k=>k.cot===q.id)),cobOk=acc.some(q=>calc(q).total-solicitado(q.id)>0.009);
+  open('Nuevo documento',`<div class="opts">
+    <button class="opt" data-act="cot-new"><b>Cotización</b><span>Conceptos, cantidades y precios, con IVA si el cliente factura.</span></button>
+    <button class="opt" data-act="con-new" ${conOk?'':'disabled'}><b>Contrato</b><span>${conOk?'Sale de una cotización aceptada: alcance, plazo, forma de pago y garantía.':'Primero necesitas una cotización aceptada sin contrato.'}</span></button>
+    <button class="opt" data-act="sol-new" ${cobOk?'':'disabled'}><b>Solicitud de pago</b><span>${cobOk?'Anticipo, saldo o pago parcial con los datos bancarios de la empresa.':'Primero necesitas una cotización aceptada con saldo por cobrar.'}</span></button>
+  </div>`);
+}
+
+/* cotización */
+let draft=null;
+function cotForm(cliId=''){
+  draft={cli:cliId,iva:cliId?cli(cliId).factura:true,items:[{d:'',u:'m²',c:'',p:''}]};
+  open('Nueva cotización',`
+  <label class="f">Cliente<select id="f-cli"><option value="">Elige un cliente…</option>${S.clientes.map(c=>`<option value="${c.id}" ${c.id===cliId?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></label>
+  <div id="cli-card"></div>
+  <p class="sec">Conceptos</p>
+  <div class="items" id="items"></div>
+  <div><button class="btn sm" data-act="row-add">Agregar concepto</button></div>
+  <label class="check"><input type="checkbox" id="f-iva"> Agregar IVA ${S.cfg.iva}%</label>
+  <div class="totals" id="tots"></div>
+  <label class="f">Notas para el cliente<textarea id="f-notas" rows="2" placeholder="Ej. Incluye retiro de escombro"></textarea></label>
+  <p class="err" id="f-err" hidden></p>`,
+  `<button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="cot-save">Crear cotización</button>`);
+  drawCli();drawItems();
+}
+function drawCli(){
+  const c=cli(draft.cli);document.getElementById('f-iva').checked=draft.iva;
+  document.getElementById('cli-card').innerHTML=c?`<div class="card"><b>${esc(c.razon||c.nombre)}</b>
+  <span>${c.rfc?`RFC <span class="mono">${esc(c.rfc)}</span> · ${esc(c.regimen)}`:'Sin datos fiscales'}</span>
+  <span>${esc(c.obra)||'Sin obra registrada'} · <span class="mono">${esc(c.tel)}</span></span>
+  <span>${c.factura?'Requiere factura: el IVA se agrega solo.':'No requiere factura: precio sin IVA.'}</span></div>`:'';
+}
+function drawItems(){
+  document.getElementById('items').innerHTML=`<div class="irow h"><span>Concepto</span><span>Unidad</span><span>Cantidad</span><span>Precio unit.</span><span class="lt">Importe</span><span></span></div>`+
+  draft.items.map((it,i)=>`<div class="irow">
+    <input aria-label="Concepto" data-i="${i}" data-k="d" value="${esc(it.d)}" placeholder="Ej. Instalación de piso">
+    <select aria-label="Unidad" data-i="${i}" data-k="u">${UNI.map(u=>`<option ${u===it.u?'selected':''}>${u}</option>`).join('')}</select>
+    <input aria-label="Cantidad" data-i="${i}" data-k="c" value="${esc(it.c)}" inputmode="decimal" class="mono" placeholder="0">
+    <input aria-label="Precio unitario" data-i="${i}" data-k="p" value="${esc(it.p)}" inputmode="decimal" class="mono" placeholder="$0">
+    <span class="lt" id="lt-${i}"></span>
+    <button class="x" data-act="row-del" data-i="${i}" aria-label="Quitar concepto" ${draft.items.length<2?'disabled':''}>×</button></div>`).join('');
+  drawTots();
+}
+function drawTots(){
+  draft.items.forEach((it,i)=>{const el=document.getElementById('lt-'+i);if(el)el.textContent=m((+it.c||0)*(+it.p||0))});
+  const t=calc(draft);
+  document.getElementById('tots').innerHTML=`<div><span>Subtotal</span><span class="num">${m(t.sub)}</span></div>
+  ${draft.iva?`<div><span>IVA ${S.cfg.iva}%</span><span class="num">${m(t.iva)}</span></div>`:''}
+  <div class="big"><span>Total</span><span class="num">${m(t.total)}</span></div>`;
+}
+function saveCot(){
+  const e=document.getElementById('f-err');const err=t=>{e.textContent=t;e.hidden=false};
+  if(!draft.cli)return err('Elige a qué cliente va la cotización.');
+  const items=draft.items.filter(i=>i.d.trim()&&+i.c>0&&+i.p>0).map(i=>({d:i.d.trim(),u:i.u,c:+i.c,p:+i.p}));
+  if(!items.length)return err('Agrega al menos un concepto con cantidad y precio.');
+  const q={id:uid(),num:S.seq.cot++,cli:draft.cli,fecha:today(),iva:draft.iva,est:'borrador',items,notas:val('f-notas')};
+  S.cots.push(q);S.view='documentos';S.tipo='todos';render();cotView(q.id);toast(`${fCot(q)} creada`);
+}
+
+function cotView(id){
+  const q=cot(id),c=cli(q.cli),t=calc(q);const sols=S.sols.filter(s=>s.cot===id);const sol=solicitado(id),cob=cobrado(id);const con=S.cons.find(k=>k.cot===id);
+  open(`Cotización <span class="mono">${fCot(q)}</span>`,`
+  <div class="grid2"><div class="card"><b>${esc(c.razon||c.nombre)}</b><span>${esc(c.obra)}</span><span class="mono">${esc(c.tel)}</span></div>
+  <div class="card"><span>Fecha: ${fd(q.fecha)}</span><span>Vigente hasta: ${fd(addDays(q.fecha,S.cfg.vig))}</span><span>${q.iva?`Con IVA ${S.cfg.iva}%`:'Sin IVA'}</span></div></div>
+  <div><p class="sec" style="margin-bottom:6px">Estado</p><div class="seg">${EST.cot.map(e=>`<button data-act="cot-status" data-id="${id}" data-est="${e}" aria-pressed="${q.est===e}">${cap(e)}</button>`).join('')}</div></div>
+  <div class="paper-scroll"><table class="tbl"><thead><tr><th>Concepto</th><th>Unidad</th><th class="r">Cant.</th><th class="r">P. unit.</th><th class="r">Importe</th></tr></thead>
+  <tbody>${q.items.map(i=>`<tr><td>${esc(i.d)}</td><td>${esc(i.u)}</td><td class="r num">${i.c}</td><td class="r num">${m(i.p)}</td><td class="r num">${m(i.c*i.p)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="totals"><div><span>Subtotal</span><span class="num">${m(t.sub)}</span></div>${q.iva?`<div><span>IVA ${S.cfg.iva}%</span><span class="num">${m(t.iva)}</span></div>`:''}<div class="big"><span>Total</span><span class="num">${m(t.total)}</span></div></div>
+  ${q.est==='aceptada'?`<div><p class="sec" style="margin-bottom:6px">Contrato y cobranza</p>
+    <div class="card"><span>${con?`Contrato <span class="mono">${fCon(con)}</span> · ${con.est}`:'Sin contrato'}</span>
+    <span>Cobrado: <b class="num">${m(cob)}</b> · Solicitado sin pagar: <span class="num">${m(sol-cob)}</span> · Falta por solicitar: <span class="num">${m(t.total-sol)}</span></span>
+    ${sols.map(s=>`<span><span class="mono">${fCob(s)}</span> · ${esc(s.concepto)} · <span class="num">${m(s.monto)}</span> · ${s.est}</span>`).join('')}</div></div>`:''}`,
+  `<button class="btn" data-act="doc-open" data-tipo="cot" data-id="${id}">Ver PDF</button>${q.est==='aceptada'?`${con?'':`<button class="btn" data-act="con-new" data-id="${id}">Crear contrato</button>`}<button class="btn primary" data-act="sol-new" data-id="${id}" ${t.total-sol<=0.009?'disabled':''}>Crear solicitud de pago</button>`:''}`);
+}
+
+/* contrato */
+function conForm(cotId=''){
+  const acc=S.cots.filter(q=>q.est==='aceptada'&&!S.cons.find(k=>k.cot===q.id));
+  if(!acc.length){open('Nuevo contrato','<p style="margin:0">Primero marca una cotización como <b>aceptada</b>. El contrato toma el alcance y el precio de ahí.</p>','<button class="btn primary" data-act="close">Entendido</button>');return}
+  if(!acc.find(q=>q.id===cotId))cotId=acc[0].id;
+  open('Nuevo contrato',`
+  <label class="f">Cotización aceptada<select id="f-kcot">${acc.map(q=>`<option value="${q.id}" ${q.id===cotId?'selected':''}>${fCot(q)} · ${esc(cli(q.cli).nombre)} · ${m(calc(q).total)}</option>`).join('')}</select></label>
+  <div class="grid2">
+    <label class="f">Fecha de inicio<input id="f-kini" type="date" value="${addDays(today(),7)}"></label>
+    <label class="f">Plazo de ejecución (días hábiles)<input id="f-kpla" value="10" inputmode="numeric" class="mono"></label>
+    <label class="f">Garantía de mano de obra (meses)<input id="f-kgar" value="12" inputmode="numeric" class="mono"></label>
+  </div>
+  <p class="err" id="f-err" hidden></p>`,
+  `<button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="con-save">Generar contrato</button>`);
+}
+function saveCon(){
+  const e=document.getElementById('f-err');const err=t=>{e.textContent=t;e.hidden=false};
+  const pla=parseInt(val('f-kpla')),gar=parseInt(val('f-kgar'));
+  if(!val('f-kini'))return err('Elige la fecha de inicio.');
+  if(!(pla>0))return err('El plazo tiene que ser de al menos 1 día.');
+  if(isNaN(gar)||gar<0)return err('Escribe la garantía en meses (0 si no aplica).');
+  const k={id:uid(),num:S.seq.con++,cot:val('f-kcot'),fecha:today(),inicio:val('f-kini'),plazo:pla,garantia:gar,est:'borrador'};
+  S.cons.push(k);S.view='documentos';render();conDoc(k.id);toast(`${fCon(k)} generado`);
+}
+
+/* solicitud de pago */
+function solForm(cotId=''){
+  const acc=S.cots.filter(q=>q.est==='aceptada'&&calc(q).total-solicitado(q.id)>0.009);
+  if(!acc.length){open('Nueva solicitud de pago','<p style="margin:0">Primero marca una cotización como <b>aceptada</b>. Las solicitudes de pago salen de una cotización que el cliente ya aprobó.</p>','<button class="btn primary" data-act="close">Entendido</button>');return}
+  if(!acc.find(q=>q.id===cotId))cotId=acc[0].id;
+  open('Nueva solicitud de pago',`
+  <label class="f">Cotización aceptada<select id="f-scot">${acc.map(q=>`<option value="${q.id}" ${q.id===cotId?'selected':''}>${fCot(q)} · ${esc(cli(q.cli).nombre)} · ${m(calc(q).total)}</option>`).join('')}</select></label>
+  <div class="grid2"><label class="f">Concepto<select id="f-sconc"><option value="ant">Anticipo 50%</option><option value="sal">Pago final (saldo)</option><option value="tot">Pago total</option><option value="otro">Otro porcentaje</option></select></label>
+  <label class="f" id="pct-wrap" hidden>Porcentaje del total<input id="f-spct" value="30" inputmode="decimal" class="mono"></label></div>
+  <div class="totals" id="stots" style="justify-self:stretch"></div>
+  <p class="err" id="f-err" hidden></p>`,
+  `<button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="sol-save">Generar solicitud</button>`);
+  drawSol();
+}
+function solCalc(){
+  const q=cot(val('f-scot'));const total=calc(q).total,ya=solicitado(q.id),rest=total-ya;const k=val('f-sconc');
+  let monto=0,concepto='';
+  if(k==='ant'){monto=total*.5;concepto='Anticipo 50%'}
+  else if(k==='sal'){monto=rest;concepto='Pago final (saldo)'}
+  else if(k==='tot'){monto=total;concepto='Pago total'}
+  else{const p=parseFloat(val('f-spct'))||0;monto=total*p/100;concepto=`Pago parcial ${p}%`}
+  monto=Math.round(monto*100)/100;return{q,total,ya,rest,monto,concepto};
+}
+function drawSol(){
+  document.getElementById('pct-wrap').hidden=val('f-sconc')!=='otro';
+  const r=solCalc();
+  document.getElementById('stots').innerHTML=`<div><span>Total de la cotización</span><span class="num">${m(r.total)}</span></div>
+  <div><span>Ya solicitado antes</span><span class="num">${m(r.ya)}</span></div>
+  <div class="big"><span>Esta solicitud</span><span class="num">${m(r.monto)}</span></div>
+  <div><span>Quedaría por solicitar</span><span class="num">${m(r.rest-r.monto)}</span></div>`;
+}
+function saveSol(){
+  const r=solCalc();const e=document.getElementById('f-err');const err=t=>{e.textContent=t;e.hidden=false};
+  if(r.monto<=0)return err('El monto tiene que ser mayor a cero.');
+  if(r.monto-r.rest>0.009)return err(`Ese monto pasa lo que falta por solicitar (${m(r.rest)}). Usa "Pago final (saldo)".`);
+  const s={id:uid(),num:S.seq.cob++,cot:r.q.id,concepto:r.concepto,monto:r.monto,fecha:today(),est:'pendiente',fpago:''};
+  S.sols.push(s);S.view='documentos';render();solDoc(s.id);toast(`${fCob(s)} generada`);
+}
+
+/* documentos tipo PDF */
+const NOTE='<p class="note">Así sale el PDF que se descarga y se manda al cliente por WhatsApp o correo. Es un documento de demostración: la empresa, el RFC y los datos bancarios son ficticios.</p>';
+const head=(k,v)=>{const E=S.cfg;return `<div class="ph"><div><h4>${esc(E.nombre)}</h4><div>${esc(E.razon)}${E.rfc?`<br>RFC <span class="mono">${esc(E.rfc)}</span>`:''}<br>${esc(E.direccion||E.ciudad)}<br>${esc(E.tel)} · ${esc(E.email)}</div></div>
+<div class="doc-t"><div class="k">${k}</div><div class="v">${v}</div><div class="demo-tag">Documento de demostración</div></div></div>`};
+const showDoc=html=>open('Vista previa del PDF',NOTE+`<div class="paper-scroll"><div class="paper">${html}</div></div>`,`<button class="btn" data-act="close">Cerrar</button>`);
+const itemsTable=q=>`<table><thead><tr><th>Concepto</th><th>Unidad</th><th class="r">Cantidad</th><th class="r">Precio unit.</th><th class="r">Importe</th></tr></thead>
+  <tbody>${q.items.map(i=>`<tr><td>${esc(i.d)}</td><td>${esc(i.u)}</td><td class="r mono">${i.c}</td><td class="r mono">${m(i.p)}</td><td class="r mono">${m(i.c*i.p)}</td></tr>`).join('')}</tbody></table>`;
+function cotDoc(id){
+  const q=cot(id),c=cli(q.cli),t=calc(q);
+  showDoc(`${head('Cotización',fCot(q))}
+  <div class="meta2"><div><div class="lbl">Cliente</div><b>${esc(c.razon||c.nombre)}</b>${c.rfc?`<br>RFC <span class="mono">${esc(c.rfc)}</span>`:''}<br>${esc(c.obra)}</div>
+  <div><div class="lbl">Fecha</div>${fdl(q.fecha)}<div class="lbl" style="margin-top:8px">Vigencia</div>${S.cfg.vig} días, hasta el ${fdl(addDays(q.fecha,S.cfg.vig))}</div></div>
+  ${itemsTable(q)}
+  <div class="tot"><div><span>Subtotal</span><span class="mono">${m(t.sub)}</span></div>${q.iva?`<div><span>IVA ${S.cfg.iva}%</span><span class="mono">${m(t.iva)}</span></div>`:''}<div class="big"><span>Total MXN</span><span class="mono">${m(t.total)}</span></div></div>
+  <div class="foot">${q.notas?esc(q.notas)+'<br>':''}${esc(S.cfg.condiciones)}${q.iva?'':' Precio sin IVA, no incluye factura.'}</div>`);
+}
+function conDoc(id){
+  const k=S.cons.find(x=>x.id===id),q=cot(k.cot),c=cli(q.cli),E=S.cfg,t=calc(q);
+  showDoc(`${head('Contrato de obra',fCon(k))}
+  <p>Contrato de prestación de servicios que celebran, por una parte, <b>${esc(E.razon)}</b> (en adelante "el Contratista") y, por la otra, <b>${esc(c.razon||c.nombre)}</b>${c.rfc?`, con RFC <span class="mono">${esc(c.rfc)}</span>`:''} (en adelante "el Cliente"), en ${esc(E.ciudad)}, a ${fdl(k.fecha)}.</p>
+  <h5>Primera. Objeto</h5><p>El Contratista realizará los trabajos descritos en la cotización <span class="mono">${fCot(q)}</span>${c.obra?` en ${esc(c.obra)}`:''}:</p>
+  ${itemsTable(q)}
+  <h5>Segunda. Precio</h5><p>El precio total es de <b class="mono">${m(t.total)}</b>${q.iva?`, IVA (${E.iva}%) incluido`:', sin IVA'}.</p>
+  <h5>Tercera. Forma de pago</h5><p>50% de anticipo a la firma de este contrato y 50% al entregar los trabajos, mediante transferencia a la cuenta indicada en cada solicitud de pago.</p>
+  <h5>Cuarta. Plazo</h5><p>Los trabajos inician el ${fdl(k.inicio)} y se entregan en un plazo de ${k.plazo} días hábiles, siempre que el área esté libre y el material disponible en obra.</p>
+  <h5>Quinta. Garantía</h5><p>${k.garantia>0?`El Contratista garantiza la mano de obra por ${k.garantia} meses a partir de la entrega. La garantía no cubre defectos del material suministrado por el Cliente ni daños por mal uso.`:'Los trabajos no incluyen garantía de mano de obra.'}</p>
+  <div class="sign"><div>${esc(E.razon)}<br>El Contratista</div><div>${esc(c.razon||c.nombre)}<br>El Cliente</div></div>`);
+}
+function solDoc(id){
+  const s=S.sols.find(x=>x.id===id),q=cot(s.cot),c=cli(q.cli),E=S.cfg,t=calc(q);const ya=S.sols.filter(x=>x.cot===q.id&&x.num<s.num).reduce((a,x)=>a+x.monto,0);
+  showDoc(`${head('Solicitud de pago',fCob(s))}
+  <p>En ${esc(E.ciudad)}, a ${fdl(s.fecha)}, <b>${esc(E.razon)}</b> solicita a <b>${esc(c.razon||c.nombre)}</b> el pago de <b class="mono">${m(s.monto)}</b> por concepto de <b>${esc(s.concepto)}</b> del trabajo descrito en la cotización <span class="mono">${fCot(q)}</span>${c.obra?`, a realizarse en ${esc(c.obra)}`:''}.</p>
+  <table><thead><tr><th>Desglose</th><th class="r">Monto</th></tr></thead><tbody>
+  <tr><td>Total de la cotización ${fCot(q)}${q.iva?' (IVA incluido)':''}</td><td class="r mono">${m(t.total)}</td></tr>
+  <tr><td>Pagos solicitados anteriormente</td><td class="r mono">${m(ya)}</td></tr>
+  <tr><td><b>Esta solicitud: ${esc(s.concepto)}</b></td><td class="r mono"><b>${m(s.monto)}</b></td></tr>
+  <tr><td>Saldo restante después de este pago</td><td class="r mono">${m(t.total-ya-s.monto)}</td></tr></tbody></table>
+  <div class="lbl">Datos para transferencia</div>
+  <div class="bank"><span>Beneficiario</span><b>${esc(E.beneficiario||E.razon)}</b><span>Banco</span><span>${esc(E.banco)}</span>${E.cuenta?`<span>Cuenta</span><span class="mono">${esc(E.cuenta)}</span>`:''}${E.clabe?`<span>CLABE</span><span class="mono">${esc(E.clabe)}</span>`:''}<span>Referencia</span><span class="mono">${fCob(s)}</span></div>
+  ${E.instrucciones?`<p>${esc(E.instrucciones)}</p>`:''}
+  <div class="foot">Se adjunta la cotización ${fCot(q)}. Este documento no es un comprobante fiscal (CFDI)${c.factura?'; la factura se emite por separado al recibir el pago':''}.</div>`);
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+  if(a==='bg'&&e.target!==b)return;
+  switch(a){
+    case 'nav':S.view=b.dataset.view;close();render();window.scrollTo({top:0});break;
+    case 'bg':case 'close':close();break;
+    case 'tipo':S.tipo=b.dataset.t;render();break;
+    case 'lead-convert':{const l=S.leads.find(x=>x.id===id);cliForm({nombre:l.nombre,razon:l.empresa,tel:l.tel,email:l.email,factura:!!l.empresa},id);break}
+    case 'lead-wa':{const l=S.leads.find(x=>x.id===id);if(l.estado==='nuevo'){l.estado='contactado';setTimeout(render,300)}return}
+    case 'lead-discard':S.leads.find(x=>x.id===id).estado='descartado';render();toast('Lead descartado');break;
+    case 'cli-new':cliForm();break;
+    case 'cli-edit':cliForm(cli(id));break;
+    case 'cli-save':saveCli(id,b.dataset.lead);break;
+    case 'doc-new':docNew();break;
+    case 'cot-new':cotForm(b.dataset.cli||'');break;
+    case 'row-add':draft.items.push({d:'',u:'m²',c:'',p:''});drawItems();document.querySelector(`[data-i="${draft.items.length-1}"][data-k="d"]`).focus();break;
+    case 'row-del':draft.items.splice(+b.dataset.i,1);drawItems();break;
+    case 'cot-save':saveCot();break;
+    case 'cot-view':cotView(id);break;
+    case 'cot-status':cot(id).est=b.dataset.est;render();cotView(id);break;
+    case 'con-new':conForm(id||'');break;
+    case 'con-save':saveCon();break;
+    case 'sol-new':solForm(id||'');break;
+    case 'sol-save':saveSol();break;
+    case 'doc-open':({cot:cotDoc,con:conDoc,cob:solDoc})[b.dataset.tipo](id);break;
+    case 'cfg-save':saveCfg();break;
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;if(t.dataset.i!==undefined&&draft){draft.items[+t.dataset.i][t.dataset.k]=t.value;drawTots()}
+  if(t.id==='f-spct')drawSol();
+  if(t.id==='f-q'){S.q=t.value;drawCliList()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='f-cli'){draft.cli=t.value;draft.iva=t.value?cli(t.value).factura:true;drawCli();drawTots()}
+  if(t.id==='f-iva'){draft.iva=t.checked;drawTots()}
+  if(t.dataset.i!==undefined&&draft){draft.items[+t.dataset.i][t.dataset.k]=t.value}
+  if(t.id==='f-scot'||t.id==='f-sconc')drawSol();
+  if(t.dataset.estTipo){
+    const arr={cot:S.cots,con:S.cons,cob:S.sols}[t.dataset.estTipo];const d=arr.find(x=>x.id===t.dataset.id);d.est=t.value;
+    if(t.dataset.estTipo==='cob')d.fpago=t.value==='pagado'?today():'';
+    render();toast('Estado actualizado');
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+render();
+</script>
+
+</body>
+</html>
